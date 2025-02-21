@@ -3,33 +3,37 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 export async function middleware(req: NextRequest) {
+  // Create a response object that we can modify
   const res = NextResponse.next()
+  
+  // Initialize Supabase client with the request and response
   const supabase = createMiddlewareClient({ req, res })
 
-  // Refresh session if expired - required for Server Components
+  // Get the current session
   const { data: { session } } = await supabase.auth.getSession()
 
-  // Add the current path to headers so we can read it in root layout
-  res.headers.set('x-pathname', req.nextUrl.pathname)
+  // Get the current URL path
+  const path = req.nextUrl.pathname
 
-  // If user is not signed in and the current path is not /login or /signup,
-  // redirect the user to /login
-  if (!session && !['/login', '/signup'].includes(req.nextUrl.pathname)) {
-    const redirectUrl = new URL('/login', req.url)
-    redirectUrl.searchParams.set('redirectedFrom', req.nextUrl.pathname)
+  // If user is not logged in and trying to access protected routes
+  if (!session && !path.startsWith('/auth')) {
+    // Redirect to login page
+    const redirectUrl = new URL('/auth/login', req.url)
+    // Store the original URL to redirect back after login
+    redirectUrl.searchParams.set('redirectTo', path)
     return NextResponse.redirect(redirectUrl)
   }
 
-  // If user is signed in and the current path is /login or /signup,
-  // redirect the user to /dashboard
-  if (session && ['/login', '/signup'].includes(req.nextUrl.pathname)) {
+  // If user is logged in and trying to access auth pages
+  if (session && path.startsWith('/auth')) {
+    // Redirect to dashboard
     return NextResponse.redirect(new URL('/dashboard', req.url))
   }
 
   return res
 }
 
-// Specify which routes to run the middleware on
+// Run middleware on all routes except public assets
 export const config = {
-  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)']
+  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
 } 

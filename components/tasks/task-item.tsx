@@ -5,23 +5,14 @@ import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Star, Pencil, Trash2 } from "lucide-react"
-
-interface Task {
-  id: string
-  title: string
-  tag: string
-  date: string
-  time: string
-  isStarred: boolean
-  isCompleted: boolean
-}
+import type { Task } from "@/lib/tasks"
 
 interface TaskItemProps {
   task: Task
-  onComplete: (id: string) => void
-  onStar: (id: string) => void
-  onDelete: (id: string) => void
-  onEdit: (id: string, newTitle: string) => void
+  onComplete: (completed: boolean) => void
+  onStar: (starred: boolean) => void
+  onDelete: () => void
+  onEdit: (title: string) => void
 }
 
 export function TaskItem({
@@ -35,8 +26,8 @@ export function TaskItem({
   const [editedTitle, setEditedTitle] = useState(task.title)
 
   const handleEdit = () => {
-    if (isEditing) {
-      onEdit(task.id, editedTitle)
+    if (isEditing && editedTitle.trim() !== task.title) {
+      onEdit(editedTitle.trim())
     }
     setIsEditing(!isEditing)
   }
@@ -44,8 +35,8 @@ export function TaskItem({
   return (
     <div className="group flex items-center space-x-4 p-4 bg-white rounded-lg shadow-sm hover:shadow">
       <Checkbox
-        checked={task.isCompleted}
-        onCheckedChange={() => onComplete(task.id)}
+        checked={task.is_completed}
+        onCheckedChange={onComplete}
       />
       <div className="flex-1">
         {isEditing ? (
@@ -56,7 +47,7 @@ export function TaskItem({
           />
         ) : (
           <div className="flex items-center space-x-2">
-            <span className={task.isCompleted ? 'line-through text-gray-400' : ''}>
+            <span className={task.is_completed ? 'line-through text-gray-400' : ''}>
               {task.title}
             </span>
             <span className="text-xs text-gray-400">• {task.tag}</span>
@@ -77,7 +68,7 @@ export function TaskItem({
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => onDelete(task.id)}
+          onClick={onDelete}
           className="text-red-500 hover:text-red-600"
         >
           <Trash2 className="h-4 w-4" />
@@ -85,8 +76,8 @@ export function TaskItem({
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => onStar(task.id)}
-          className={task.isStarred ? 'text-yellow-400' : 'text-gray-400'}
+          onClick={() => onStar(!task.is_starred)}
+          className={task.is_starred ? 'text-yellow-400' : 'text-gray-400'}
         >
           <Star className="h-4 w-4" />
         </Button>
