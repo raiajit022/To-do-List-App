@@ -1,20 +1,22 @@
 import type { Metadata } from 'next'
 import './globals.css'
+import { AuthProvider } from '@/components/providers/auth-provider'
 
 export const metadata: Metadata = {
-  title: 'v0 App',
-  description: 'Created with v0',
-  generator: 'v0.dev',
+  title: 'Task Manager',
+  description: 'A simple task manager application',
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode
-}>) {
+}) {
   return (
-    <html lang="en">
-      <body>{children}</body>
+    <html lang="en" suppressHydrationWarning>
+      <body suppressHydrationWarning>
+        <AuthProvider>{children}</AuthProvider>
+      </body>
     </html>
   )
 }

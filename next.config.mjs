@@ -15,6 +15,9 @@ const nextConfig = {
   },
   images: {
     unoptimized: true,
+    domains: [
+      process.env.NEXT_PUBLIC_SUPABASE_URL?.replace('https://', '') ?? '',
+    ],
   },
   experimental: {
     webpackBuildWorker: true,
